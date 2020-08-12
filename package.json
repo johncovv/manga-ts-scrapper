@@ -10,7 +10,7 @@
 	"scripts": {
 		"dev": "ts-node-dev --transpile-only --inspect --ignore-watch node_modules ./server/server.ts",
 		"build": "tsc",
-		"start": "node ./build/server.ts",
+		"start": "node ./build/server.js",
 		"lint": "eslint . --ext .ts",
 		"lint:fix": "eslint . --ext .ts --fix"
 	},
