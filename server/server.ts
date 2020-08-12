@@ -19,4 +19,5 @@ app.use('/api', routes);
 
 const { port } = env;
 
+// eslint-disable-next-line no-console
 app.listen(port, () => console.log(`🚀 Server started on port: ${port}`));

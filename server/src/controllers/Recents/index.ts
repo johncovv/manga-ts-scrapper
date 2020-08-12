@@ -2,127 +2,84 @@ import puppeteer from 'puppeteer';
 import env from '../../configs/enviroment';
 
 interface MangaItemDataType {
-	id: number;
 	title: string;
 	thumbnail: string;
-	genres: [string];
-	description: string;
 	link: string;
 }
 
 interface RequestDataType {
 	length: number;
-	pagination: number | undefined;
+	pagination: number;
 	list: MangaItemDataType[];
 }
 
 const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
-	const requestUrl = `${env.baseUrl}/lista-de-mangas/ordenar-por-atualizacoes${
-		pagination ? `?page=${pagination}` : ``
+	const requestUrl = `${env.baseUrl}/lancamentos/${
+		pagination ? `/page/${pagination}` : ``
 	}`;
+	const browser = await puppeteer.launch();
+	const page = await browser.newPage();
 
-	let browser = null;
+	page.evaluateOnNewDocument(`
+		Object.defineProperty(window, 'baseUrl', {
+			get() {
+				return '${env.baseUrl}'
+			}
+		})
+	`);
 
-	try {
-		browser = await puppeteer.launch();
-		const page = await browser.newPage();
+	await page.goto(requestUrl);
 
-		page.evaluateOnNewDocument(`
-			Object.defineProperty(window, 'baseUrl', {
-				get() {
-					return '${env.baseUrl}'
-				}
-			})
-		`);
+	const ResponseRecents = await page.evaluate(() => {
+		// current page
+		const paginationElement = document.querySelector(
+			'#lancamentos > div > div > div > span.current',
+		) as HTMLSpanElement;
+		const pageCurrent = paginationElement.textContent || '';
 
-		const start = Date.now();
+		// recents node element
+		const containerItemElement = document.querySelectorAll(
+			'#dados > div > div > div.block-lancamentos',
+		) as NodeListOf<HTMLDivElement>;
+		const itemListArray = Array.from(containerItemElement);
 
-		await page.goto(requestUrl);
+		const recentsList = itemListArray.map((i) => {
+			// thumbnail
+			const thumbnailElement = i.querySelector(
+				'div.column-img > a.image-lancamento > img',
+			) as HTMLImageElement;
+			const thumbnail = thumbnailElement.src || '';
 
-		const ResponseRecents = await page.evaluate(
-			(): RequestDataType => {
-				const pageElement = document.querySelector(
-					'#wraper > div > ul > li.active',
-				) as HTMLAnchorElement;
+			// link
+			const linkElement = i.querySelector(
+				'div.column-img > a.image-lancamento',
+			) as HTMLAnchorElement;
+			const link =
+				linkElement.href.replace(`${window.baseUrl}/manga/`, '') || '';
 
-				const currentPage =
-					pageElement && pageElement.textContent
-						? parseInt(pageElement.textContent, 10)
-						: undefined;
+			// title
+			const titleElement = i.querySelector(
+				'div.column-content > div.content-lancamento > h4 > a',
+			) as HTMLAnchorElement;
+			const title = titleElement.textContent || '';
 
-				const recentsNodeList = document.querySelectorAll(
-					'#titulos-az > div > div > div.seriesList > ul > li > a',
-				) as NodeListOf<HTMLAnchorElement>;
+			return {
+				title,
+				thumbnail,
+				link,
+			} as MangaItemDataType;
+		});
 
-				const recentsListArray = Array.from(recentsNodeList);
+		return {
+			length: recentsList.length,
+			pagination: parseInt(pageCurrent, 10),
+			list: recentsList,
+		} as RequestDataType;
+	});
 
-				const recentsList = recentsListArray.map((i) => {
-					// id
-					const idElement = i as HTMLAnchorElement;
-					const idSplited = idElement.href.split('/').slice(-1)[0];
-					const id = parseInt(idSplited, 10);
+	browser.close();
 
-					// title
-					const titleElement = i.querySelector(
-						'.series-info > span.series-title > h1',
-					) as HTMLHeadingElement;
-
-					const title = titleElement.textContent
-						? titleElement.textContent
-						: '';
-
-					// thumbnail
-					const thumbnailElement = i.querySelector(
-						'.series-img > .cover-image',
-					) as HTMLDivElement;
-
-					const thumbnail = thumbnailElement.style.backgroundImage
-						.slice(4, -1)
-						.replace(/"/g, '');
-
-					// genres
-					const genresNodeList = i.querySelectorAll(
-						'a > div.series-info > div > div > ul > li:not(.rating) > span > span',
-					) as NodeListOf<HTMLSpanElement>;
-					const genresListArray = Array.from(genresNodeList);
-					const genres = genresListArray.map(({ textContent }) => textContent);
-
-					// description
-					const descriptionElement = i.querySelector(
-						'div.series-info > span.series-desc',
-					) as HTMLSpanElement;
-					const description = descriptionElement.innerText;
-
-					// link
-					const link = idElement.href.replace(
-						new RegExp(`${window.baseUrl}`, 'i'),
-						'',
-					);
-
-					return {
-						id,
-						title,
-						thumbnail,
-						genres,
-						description,
-						link,
-					} as MangaItemDataType;
-				}) as MangaItemDataType[];
-
-				return {
-					length: recentsListArray.length,
-					pagination: currentPage,
-					list: recentsList,
-				};
-			},
-		);
-
-		console.log('Took', Date.now() - start, 'ms');
-
-		return ResponseRecents as RequestDataType;
-	} finally {
-		if (browser) browser.close();
-	}
+	return ResponseRecents as RequestDataType;
 };
 
 export default RequestRecents;
