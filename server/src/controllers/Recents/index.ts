@@ -1,4 +1,6 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import Adblocker from 'puppeteer-extra-plugin-adblocker';
+
 import env from '../../configs/enviroment';
 
 interface MangaItemDataType {
@@ -17,7 +19,9 @@ const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
 	const requestUrl = `${env.baseUrl}/lancamentos/${
 		pagination ? `/page/${pagination}` : ``
 	}`;
-	const browser = await puppeteer.launch();
+
+	puppeteer.use(Adblocker({ blockTrackers: true, useCache: true }));
+	const browser = await puppeteer.launch(env.browserConfig);
 	const page = await browser.newPage();
 
 	page.evaluateOnNewDocument(`
