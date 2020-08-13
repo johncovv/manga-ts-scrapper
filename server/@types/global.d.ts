@@ -9,10 +9,12 @@ declare global {
 		baseUrl: string;
 		mangaId: string;
 		chapter: string;
+		searched: string;
 	}
 	interface ErrorResponseType {
 		status: number;
 		err: string;
+		requested?: unknown;
 	}
 }
 
