@@ -7,5 +7,6 @@ export default {
 	baseUrl: process.env.BASE_URL,
 	browserConfig: {
 		// headless: false,
+		// devtools: true,
 	},
 };

@@ -4,6 +4,8 @@ import recentsScrapper from './Recents';
 
 import mangaScrapper from './Manga';
 
+import chapterScrapper from './Chapter';
+
 const Controller = {
 	async recents(req: Request, res: Response): Promise<Response> {
 		const { number } = req.params;
@@ -12,8 +14,15 @@ const Controller = {
 		return res.json(response);
 	},
 	async manga(req: Request, res: Response): Promise<Response> {
-		const { id, manga } = req.params;
-		const response = await mangaScrapper(manga, id);
+		const { manga } = req.params;
+		const response = await mangaScrapper(manga);
+
+		return res.json(response);
+	},
+	async chapter(req: Request, res: Response): Promise<Response> {
+		const { manga, chapter } = req.params;
+
+		const response = await chapterScrapper(manga, chapter);
 
 		return res.json(response);
 	},

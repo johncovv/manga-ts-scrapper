@@ -37,7 +37,9 @@ interface MangaDataType {
 	chapters: ChapterDataType[];
 }
 
-const RequestManga = async (manga: string): Promise<MangaDataType> => {
+const RequestManga = async (
+	manga: string,
+): Promise<MangaDataType | ErrorResponseType> => {
 	const requestUrl = `${env.baseUrl}/manga/${manga}`;
 
 	const browser = await puppeteer.launch(env.browserConfig);
@@ -54,9 +56,19 @@ const RequestManga = async (manga: string): Promise<MangaDataType> => {
 				return '${manga}'
 			}
 		});
-  `);
+	`);
 
-	await page.goto(requestUrl);
+	process.on('unhandledRejection', (reason, p) => {
+		// eslint-disable-next-line no-console
+		console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+	});
+
+	const response = await page.goto(requestUrl);
+
+	if (response?.status() !== 200 || response?.status() !== 302) {
+		await browser.close();
+		return { status: 404, err: 'Page not found...' } as ErrorResponseType;
+	}
 
 	const RequestData = await page
 		.evaluate(() => {
