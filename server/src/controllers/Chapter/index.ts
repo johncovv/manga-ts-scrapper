@@ -119,7 +119,7 @@ const RequestManga = async (
 			} as ErrorResponseType;
 		});
 
-	// await browser.close();
+	await browser.close();
 
 	return RequestData as ChapterDataType;
 };
