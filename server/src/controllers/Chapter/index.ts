@@ -20,7 +20,7 @@ interface ChapterDataType {
 	pages: PagesDataType[];
 }
 
-const RequestManga = async (
+const RequestChapter = async (
 	manga: string,
 	chapter: string,
 ): Promise<ChapterDataType | ErrorResponseType> => {
@@ -124,4 +124,4 @@ const RequestManga = async (
 	return RequestData as ChapterDataType;
 };
 
-export default RequestManga;
+export default RequestChapter;
