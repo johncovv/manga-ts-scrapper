@@ -92,6 +92,11 @@ const RequestRecents = async (
 		.catch((err) => {
 			// eslint-disable-next-line no-console
 			console.log(`Something bad happend...${err}`);
+			return {
+				status: 502,
+				err:
+					'Erro interno, caso o erro persista, entre em contato. tt@johncovv',
+			} as ErrorResponseType;
 		});
 
 	await browser.close();
