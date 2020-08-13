@@ -34,54 +34,59 @@ const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
 
 	await page.goto(requestUrl);
 
-	const ResponseRecents = await page.evaluate(() => {
-		// current page
-		const paginationElement = document.querySelector(
-			'#lancamentos > div > div > div > span.current',
-		) as HTMLSpanElement;
-		const pageCurrent = paginationElement.textContent || '';
+	const ResponseRecents = await page
+		.evaluate(() => {
+			// current page
+			const paginationElement = document.querySelector(
+				'#lancamentos > div > div > div > span.current',
+			) as HTMLSpanElement;
+			const pageCurrent = paginationElement.textContent || '';
 
-		// recents node element
-		const containerItemElement = document.querySelectorAll(
-			'#dados > div > div > div.block-lancamentos',
-		) as NodeListOf<HTMLDivElement>;
-		const itemListArray = Array.from(containerItemElement);
+			// recents node element
+			const containerItemElement = document.querySelectorAll(
+				'#dados > div > div > div.block-lancamentos',
+			) as NodeListOf<HTMLDivElement>;
+			const itemListArray = Array.from(containerItemElement);
 
-		const recentsList = itemListArray.map((i) => {
-			// thumbnail
-			const thumbnailElement = i.querySelector(
-				'div.column-img > a.image-lancamento > img',
-			) as HTMLImageElement;
-			const thumbnail = thumbnailElement.src || '';
+			const recentsList = itemListArray.map((i) => {
+				// thumbnail
+				const thumbnailElement = i.querySelector(
+					'div.column-img > a.image-lancamento > img',
+				) as HTMLImageElement;
+				const thumbnail = thumbnailElement.src || '';
 
-			// link
-			const linkElement = i.querySelector(
-				'div.column-img > a.image-lancamento',
-			) as HTMLAnchorElement;
-			const link =
-				linkElement.href.replace(`${window.baseUrl}/manga/`, '') || '';
+				// link
+				const linkElement = i.querySelector(
+					'div.column-img > a.image-lancamento',
+				) as HTMLAnchorElement;
+				const link =
+					linkElement.href.replace(`${window.baseUrl}/manga/`, '') || '';
 
-			// title
-			const titleElement = i.querySelector(
-				'div.column-content > div.content-lancamento > h4 > a',
-			) as HTMLAnchorElement;
-			const title = titleElement.textContent || '';
+				// title
+				const titleElement = i.querySelector(
+					'div.column-content > div.content-lancamento > h4 > a',
+				) as HTMLAnchorElement;
+				const title = titleElement.textContent || '';
+
+				return {
+					title,
+					thumbnail,
+					link,
+				} as MangaItemDataType;
+			});
 
 			return {
-				title,
-				thumbnail,
-				link,
-			} as MangaItemDataType;
+				length: recentsList.length,
+				pagination: parseInt(pageCurrent, 10),
+				list: recentsList,
+			} as RequestDataType;
+		})
+		.catch((err) => {
+			// eslint-disable-next-line no-console
+			console.log(`Something bad happend...${err}`);
 		});
 
-		return {
-			length: recentsList.length,
-			pagination: parseInt(pageCurrent, 10),
-			list: recentsList,
-		} as RequestDataType;
-	});
-
-	browser.close();
+	await browser.close();
 
 	return ResponseRecents as RequestDataType;
 };
