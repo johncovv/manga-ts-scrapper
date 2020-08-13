@@ -1,25 +1,23 @@
-[
-	{
-		"developer": {
-			"name": "John Covv",
-			"portfolio": "https://johncovv.com",
-			"links": {
-				"twitter": "https://twitter.com/johncovv",
-				"github": "https://github.com/johncovv",
-				"discord": "John Covv#8639",
-				"email": "contato@johncovv.com"
-			}
-		},
-		"project": {
-			"title": "Manga API Reader",
-			"repository": "https://github.com/johncovv/manga-ts-scrapper",
-			"description": "The API was created to return manga data using scraping. Express is used for routes and puppeteer as a scrapper. This project was created entirely for the educational purpose.",
-			"technologies": [
-				"nodejs",
-				"puppeteer",
-				"express",
-				"eslint/prettier/typescript"
-			]
+{
+	"developer": {
+		"name": "John Covv",
+		"portfolio": "https://johncovv.com",
+		"links": {
+			"twitter": "https://twitter.com/johncovv",
+			"github": "https://github.com/johncovv",
+			"discord": "John Covv#8639",
+			"email": "contato@johncovv.com"
 		}
+	},
+	"project": {
+		"title": "Manga API Reader",
+		"repository": "https://github.com/johncovv/manga-ts-scrapper",
+		"description": "The API was created to return manga data using scraping. Express is used for routes and puppeteer as a scrapper. This project was created entirely for the educational purpose.",
+		"technologies": [
+			"nodejs",
+			"puppeteer",
+			"express",
+			"eslint/prettier/typescript"
+		]
 	}
-]
+}

@@ -1,5 +1,4 @@
 import puppeteer from 'puppeteer-extra';
-import Adblocker from 'puppeteer-extra-plugin-adblocker';
 
 import env from '../../configs/enviroment';
 
@@ -15,12 +14,12 @@ interface RequestDataType {
 	list: MangaItemDataType[];
 }
 
-const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
+const RequestRecents = async (
+	pagination: number,
+): Promise<RequestDataType | ErrorResponseType> => {
 	const requestUrl = `${env.baseUrl}/lancamentos/${
 		pagination ? `/page/${pagination}` : ``
 	}`;
-
-	puppeteer.use(Adblocker({ blockTrackers: true, useCache: true }));
 	const browser = await puppeteer.launch(env.browserConfig);
 	const page = await browser.newPage();
 
@@ -32,7 +31,17 @@ const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
 		})
 	`);
 
-	await page.goto(requestUrl);
+	process.on('unhandledRejection', (reason, p) => {
+		// eslint-disable-next-line no-console
+		console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+	});
+
+	const response = await page.goto(requestUrl);
+
+	if (response?.status() === 404) {
+		await browser.close();
+		return { status: 404, err: 'Page not found...' } as ErrorResponseType;
+	}
 
 	const ResponseRecents = await page
 		.evaluate(() => {
@@ -59,8 +68,7 @@ const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
 				const linkElement = i.querySelector(
 					'div.column-img > a.image-lancamento',
 				) as HTMLAnchorElement;
-				const link =
-					linkElement.href.replace(`${window.baseUrl}/manga/`, '') || '';
+				const link = linkElement.href.replace(`${window.baseUrl}`, '') || '';
 
 				// title
 				const titleElement = i.querySelector(
@@ -84,6 +92,11 @@ const RequestRecents = async (pagination: number): Promise<RequestDataType> => {
 		.catch((err) => {
 			// eslint-disable-next-line no-console
 			console.log(`Something bad happend...${err}`);
+			return {
+				status: 502,
+				err:
+					'Erro interno, caso o erro persista, entre em contato. tt@johncovv',
+			} as ErrorResponseType;
 		});
 
 	await browser.close();

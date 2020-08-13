@@ -8,7 +8,11 @@ declare global {
 	interface Window {
 		baseUrl: string;
 		mangaId: string;
-		mangaTitle: string;
+		chapter: string;
+	}
+	interface ErrorResponseType {
+		status: number;
+		err: string;
 	}
 }
 
